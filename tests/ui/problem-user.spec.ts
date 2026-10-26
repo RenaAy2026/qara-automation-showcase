@@ -1,15 +1,15 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
 import { InventoryPage } from '../../pages/InventoryPage';
 
-async function loginAs(page, username: string) {
+async function loginAs(page: Page, username: string) {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
   await loginPage.login(username, 'secret_sauce');
   await expect(page).toHaveURL(/inventory/);
 }
 
-async function getImageSources(page): Promise<string[]> {
+async function getImageSources(page: Page): Promise<string[]> {
   return page
     .locator('.inventory_item img')
     .evaluateAll((imgs) => imgs.map((img) => (img as HTMLImageElement).getAttribute('src') ?? ''));
