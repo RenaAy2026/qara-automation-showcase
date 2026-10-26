@@ -4,6 +4,9 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  schedule:
+    - cron: '17 7 * * *'
+  workflow_dispatch:
 jobs:
   test:
     timeout-minutes: 15
@@ -17,7 +20,11 @@ jobs:
       run: npm ci
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
-    - name: Run Playwright tests
+    - name: Run smoke tests (pull requests)
+      if: github.event_name == 'pull_request'
+      run: npx playwright test --grep @smoke
+    - name: Run full test suite
+      if: github.event_name != 'pull_request'
       run: npx playwright test
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
