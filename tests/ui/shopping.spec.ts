@@ -29,6 +29,7 @@ test.describe('Shopping', () => {
   test('sorting low to high orders prices correctly @regression', async () => {
     await inventoryPage.sortBy('lohi');
     const prices = await inventoryPage.getPrices();
+    expect(prices.length).toBeGreaterThan(0);
     const sorted = [...prices].sort((a, b) => a - b);
     expect(prices).toEqual(sorted);
   });
