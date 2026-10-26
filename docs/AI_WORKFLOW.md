@@ -38,12 +38,14 @@ I used Claude to speed up writing the tests in this repo. This document describe
 - **What I did:** Added a check that at least one price is found before comparing the order, then re-ran the shopping tests (12 passed).
 - **Lesson:** Review generated tests for assertions that can be satisfied by accident, not only for ones that fail. A green result on its own does not show that a test is checking anything.
 
-### 6. A CI run that hung for an hour
-- **What happened:** After a README-only commit, a GitHub Actions run stayed "in progress" for an hour and was then cancelled at the 60-minute limit. Earlier runs of the same tests had passed in under 2 minutes. At first glance it looked like the earlier runner outage, but that one had failed because no machine was ever assigned.
-- **What I did:** Opened the run and read the step-by-step log. Setup, checkout, Node and dependency install all passed in about a second each. The step "Install Playwright Browsers" ran for over an hour and stopped partway through downloading system packages. The tests never started, so the cause was in the setup, not in the test code.
-- **Fix:** Pinned the runner to `ubuntu-24.04` instead of `ubuntu-latest` (GitHub was moving the default image to Ubuntu 26, and the log showed Ubuntu 26.04 package sources), and lowered the job timeout from 60 to 15 minutes so a hang fails fast. The next run passed in under 2 minutes.
-- **What I can't claim:** One green run does not prove the Ubuntu change was the cause. It is the most likely suspect given the log, but I have not isolated it.
-- **Lesson:** Find the step that failed before changing anything, make a small targeted fix, and be clear about what is proven and what is only a likely cause.
+### 6. A CI job that kept stalling during setup
+- **What happened:** After a README-only commit, a GitHub Actions run stayed "in progress" for an hour and was cancelled at the 60-minute limit. Earlier runs of the same tests had passed in under 2 minutes. At first glance it looked like the earlier runner outage, but that one had failed because no machine was ever assigned.
+- **What I did:** Read the step-by-step log. Setup, checkout, Node and dependency install passed in about a second each. The step "Install Playwright Browsers" ran for over an hour and stopped partway through downloading system packages. The tests never started.
+- **First fix attempt (did not solve it):** Pinned the runner to `ubuntu-24.04`, since the log showed Ubuntu 26.04 package sources and GitHub was moving its default image, and lowered the job timeout to 15 minutes. One run passed, but the next two hit the 15-minute limit, and the one I checked had stalled at the same step. The Ubuntu 26 theory was wrong, or at least not enough.
+- **Second attempt (also did not solve it):** Installed only the two browsers the config uses and added a 5-minute limit to that step. It stalled again, this time while downloading a font package from the Ubuntu mirror, and failed after 5 minutes.
+- **Fix that has worked so far:** Ran the job inside Playwright's official container image, which already contains the browsers and system packages, and removed the install step. The next run passed in about 1.5 minutes.
+- **What I can't claim:** I do not know why the package downloads stalled, and one green run on the new setup does not prove it is fixed for good. I will keep watching the next runs.
+- **Lesson:** Read the log to find the failing step, test a theory with a small change, and drop the theory when the evidence says no. Timeouts turn a long hang into a quick, readable failure.
 
 ## Rules I follow
 - I read every generated test before running it.
