@@ -36,8 +36,14 @@ I used Claude to speed up writing the tests in this repo. This document describe
 ### 5. A test that could pass without testing anything
 - **What happened:** While reviewing these notes, I asked why a passing test is not proof that the test is good. The AI pointed to my own sorting test in `shopping.spec.ts`. It sorted the prices and compared them with a sorted copy, but it never checked that any products existed. With an empty product list, both lists would be empty and the test would pass while the page was broken.
 - **What I did:** Added a check that at least one price is found before comparing the order, then re-ran the shopping tests (12 passed).
-
 - **Lesson:** Review generated tests for assertions that can be satisfied by accident, not only for ones that fail. A green result on its own does not show that a test is checking anything.
+
+### 6. A CI run that hung for an hour
+- **What happened:** After a README-only commit, a GitHub Actions run stayed "in progress" for an hour and was then cancelled at the 60-minute limit. Earlier runs of the same tests had passed in under 2 minutes. At first glance it looked like the earlier runner outage, but that one had failed because no machine was ever assigned.
+- **What I did:** Opened the run and read the step-by-step log. Setup, checkout, Node and dependency install all passed in about a second each. The step "Install Playwright Browsers" ran for over an hour and stopped partway through downloading system packages. The tests never started, so the cause was in the setup, not in the test code.
+- **Fix:** Pinned the runner to `ubuntu-24.04` instead of `ubuntu-latest` (GitHub was moving the default image to Ubuntu 26, and the log showed Ubuntu 26.04 package sources), and lowered the job timeout from 60 to 15 minutes so a hang fails fast. The next run passed in under 2 minutes.
+- **What I can't claim:** One green run does not prove the Ubuntu change was the cause. It is the most likely suspect given the log, but I have not isolated it.
+- **Lesson:** Find the step that failed before changing anything, make a small targeted fix, and be clear about what is proven and what is only a likely cause.
 
 ## Rules I follow
 - I read every generated test before running it.
