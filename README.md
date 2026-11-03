@@ -57,3 +57,5 @@ Every push triggers the GitHub Actions workflow in `.github/workflows/playwright
 - [Test strategy](docs/TEST_STRATEGY.md): what is automated and why, how flaky tests are handled, and how this would scale to a real product
 - [Bug reports](docs/BUG_REPORTS.md): two defects found in Sauce Demo's `problem_user` account, with steps, evidence and a `standard_user` control check
 - [AI-assisted workflow](docs/AI_WORKFLOW.md): how AI was used to draft tests, and real examples of what I had to fix
+
+The full test suite also runs automatically every night on a schedule.
